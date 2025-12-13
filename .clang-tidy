@@ -1,0 +1,22 @@
+---
+Checks: >
+  -*,
+  bugprone-*,
+  google-*,
+  misc-*,
+  modernize-*,
+  performance-*,
+  portability-*,
+  readability-*,
+  -google-readability-braces-around-statements,
+  -google-readability-namespace-comments,
+  -google-runtime-references,
+  -misc-non-private-member-variables-in-classes,
+  -modernize-return-braced-init-list,
+  -performance-move-const-arg,
+  -readability-named-parameter,
+  -modernize-use-trailing-return-type,
+  -readability-braces-around-statements,
+  -readability-redundant-declaration
+
+HeaderFilterRegex: '.*'
