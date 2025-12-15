@@ -1,14 +1,15 @@
 build/
 bin/
 cache/
+.cache/
 lib/
 
-.exe
-.out
-.app
-.dll
-.so
-.dylib
+*.exe
+*.out
+*.app
+*.dll
+*.so
+*.dylib
 
 .vscode/
 

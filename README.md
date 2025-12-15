@@ -99,10 +99,10 @@ blah blah short explanation about file structure
     Download, run installer, select `Add LLVM to system PATH`
 - **VS Code** (optional)
 
-    Install VS Code and use extension: `C/C++ (Microsoft)`
+    Install VS Code and use extensions: `C/C++`, `CMake Tools` and `clangd` (make sure to disable IntelliSense for clangd to work)
 
 ### Build using CMake
-On build, Clang-Tidy is also run and outputs warnings in terminal.
+Use the following commands to build the project. On build, Clang-Tidy is also run and outputs warnings in terminal.
 
 **Windows**
 ```
@@ -122,13 +122,18 @@ On build, Clang-Tidy is also run and outputs warnings in terminal.
 
 ???
 
+### Run during development
+
+```
+> clang++ -std=c++20 -I include src/matching_engine/*.cpp src/protocol_layer/*.cpp -o test.exe
+```
+
 ### Set up Clang-Format in VS Code
 Clang-Format is used for formatting the code. This guarantees that code is consistent across all files (spacing, tab size, etc)
 
-1. Install the "C/C++" extension.
-2. Go to settings, search for "Format on Save", and turn it on.
+1. Go to settings, search for "Format on Save", and turn it on.
 3. Open a .cpp file and hit `Ctrl+Shift+P`
-4. Search for "Format Document With", click it and press `Configure Default Formatter...` and select `C/C++`.
+4. Search for "Format Document With", click it and press `Configure Default Formatter...` and select `clangd`.
 3. Hit `Ctrl+S` to save and the code gets formatted.
 
 ### Naming Conventions
