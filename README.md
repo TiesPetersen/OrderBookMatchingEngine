@@ -2,24 +2,8 @@
 ![CMake](https://img.shields.io/badge/CMake-%23008FBA.svg?style=for-the-badge&logo=cmake&logoColor=white)
 
 
-# High Performance Market Engine
-A distributed C++ market ecosystem featuring a low-latency order book matching engine, a custom FIX-style communication protocol, and an algorithmic trading client.
-
-## Components / Architecture?
-
-Component / Architecture Diagram?
-
-1. **Matching Engine** (`/src/matching_engine`)
-    
-    blah blah
-2. **Protocol Layer** (`/src/protocol_layer`)
-
-    blah blah
-3. **Trading Client** (`/src/trading_client`)
-
-    blah blah
-
-4. ( dashboard )
+# High Performance Matching Engine
+A highly optimized C++ order book matching engine. [TODO: more detailed/descriptive description]
 
 ## Documents
 
@@ -54,30 +38,24 @@ any other ???
 │   .clang-tidy
 │   .gitignore
 │   CMakeLists.txt
-│   README.md
 ├───benchmarks
-│       bench_matching_engine.cpp
+│       bench.cpp
 ├───docs
 │       diagrams.txt
 ├───include
-│   ├───matching_engine
-│   │       placeholder.hpp
-│   ├───protocol_layer
-│   │       placeholder.hpp
-│   └───trading_client
-│           placeholder.hpp
+│   ├───common
+│   │       Types.hpp
+│   └───matching_engine
+│           Order.hpp
+│           OrderBook.hpp
 ├───scripts
 │       dashboard.py
 ├───src
-│   ├───matching_engine
-│   │       main.cpp
-│   ├───protocol_layer
-│   │       main.cpp
-│   └───trading_client
-│           main.cpp
+│       main.cpp
+│       Order.cpp
+│       OrderBook.cpp
 └───tests
-        test_order_book.cpp
-        test_protocol.cpp
+        test.cpp
 ```
 
 Use the following command to update file structure (Windows), make sure that the /build folder is deleted:
@@ -108,14 +86,12 @@ Use the following commands to build the project. On build, Clang-Tidy is also ru
 ```
 > cmake --build build
 > .\build\Debug\market_engine.exe
-> .\build\Debug\trading_client.exe
 ```
 
 **Linux**
 ```
 > cmake --build build
 > .\build\market_engine
-> .\build\trading_client
 ```
 
 ### Test using CMake
@@ -124,8 +100,16 @@ Use the following commands to build the project. On build, Clang-Tidy is also ru
 
 ### Run during development
 
+**Windows**
 ```
-> clang++ -std=c++20 -I include src/matching_engine/*.cpp src/protocol_layer/*.cpp -o test.exe
+> clang++ -std=c++20 -I include src/*.cpp -o test.exe
+> .\test.exe
+```
+
+**Linux**
+```
+> clang++ -std=c++20 -I include src/*.cpp -o test
+> ./test
 ```
 
 ### Set up Clang-Format in VS Code
