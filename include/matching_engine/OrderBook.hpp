@@ -19,5 +19,7 @@ class OrderBook {
 
     void CancelOrder(OrderID orderId);
 
+    // Helpers
+
     Volume GetVolumeAtPrice(Price price, Side side);
 };

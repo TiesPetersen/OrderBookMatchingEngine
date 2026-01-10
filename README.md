@@ -5,18 +5,34 @@
 # High Performance Matching Engine
 A highly optimized C++ order book matching engine. [TODO: more detailed/descriptive description]
 
-## Documents
+Concise performance metrics...
 
-- PDF about final product (implementation / metrics / benchmarks / final product)
-- PDF about the build process (goals / teamwork / tools / frameworks / learning outcomes)
-- Dashboard?
-- ...
+## Features
+
+### Place order
+Places and executes a new order using price-time priority. 
+
+**Order types**
+- Limit order
+- Market order
+
+### Cancel order
+Removes order from limit order book.
+
+_Note: the modify-order operation has been left out for simplicity. Modifying an order can simply be treated as a cancel + place order. You would lose your place in the time-priority queue this way, but that is what happens in real exchanges most of time anyway._
 
 ## Performance
 
 Some performance stats to quickly showcase to recruiters
 
 Read more in PDF about final product
+
+## Documents
+
+- PDF about final product (implementation / metrics / benchmarks / final product)
+- PDF about the build process (goals / teamwork / tools / frameworks / learning outcomes)
+- Dashboard?
+- ...
 
 ## Dependencies & Tooling
 **Language:** C++20
@@ -95,7 +111,7 @@ Use the following commands to build the benchmark. On build, Clang-Tidy is also 
 Use the following commands to compile the matching engine in order to test specific features by changing `src/main.cpp`.
 
 ```
-> clang++ -std=c++20 -I include src/*.cpp -o test.exe
+> clang++ -std=c++20 -O3 -I include src/*.cpp -o test.exe
 > .\test.exe
 ```
 
