@@ -16,8 +16,6 @@ void OrderBook::PlaceOrder(Order order) {
     } else {
         sell_orders_by_price_[order.getPrice()].push_back(order);
     }
-
-    std::cout << "Placing order with ID: " << order.getOrderId() << '\n';
 }
 
 Volume OrderBook::GetVolumeAtPrice(Price price, Side side) {

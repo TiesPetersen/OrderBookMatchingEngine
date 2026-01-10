@@ -80,18 +80,11 @@ blah blah short explanation about file structure
     Install VS Code and use extensions: `C/C++`, `CMake Tools` and `clangd` (make sure to disable IntelliSense for clangd to work)
 
 ### Build using CMake
-Use the following commands to build the project. On build, Clang-Tidy is also run and outputs warnings in terminal.
+Use the following commands to build the benchmark. On build, Clang-Tidy is also run and outputs warnings in terminal.
 
-**Windows**
 ```
 > cmake --build build
-> .\build\Debug\market_engine.exe
-```
-
-**Linux**
-```
-> cmake --build build
-> .\build\market_engine
+> .\build\bench_engine.exe
 ```
 
 ### Test using CMake
@@ -99,17 +92,11 @@ Use the following commands to build the project. On build, Clang-Tidy is also ru
 ???
 
 ### Run during development
+Use the following commands to compile the matching engine in order to test specific features by changing `src/main.cpp`.
 
-**Windows**
 ```
 > clang++ -std=c++20 -I include src/*.cpp -o test.exe
 > .\test.exe
-```
-
-**Linux**
-```
-> clang++ -std=c++20 -I include src/*.cpp -o test
-> ./test
 ```
 
 ### Set up Clang-Format in VS Code

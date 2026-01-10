@@ -1,33 +1,22 @@
-cmake_minimum_required(VERSION 4.2)
+cmake_minimum_required(VERSION 3.20)
 
 project(HighPerformanceMarketEngine)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Optimization flags are critical for your resume metrics!
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -march=native -DNDEBUG") 
+
+# Tell CMake where to look for .hpp files
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
-# Clang-Tidy
-find_program(CLANG_TIDY_EXE NAMES "clang-tidy")
-if(CLANG_TIDY_EXE)
-    message(STATUS "Clang-Tidy found: ${CLANG_TIDY_EXE}")
-    set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_EXE}") 
-else()
-    message(WARNING "Clang-Tidy not found! Skipping linting.")
-endif()
-
-file(GLOB PROTOCOL_SRCS "src/protocol_layer/*.cpp")
-
-file(GLOB ENGINE_SRCS "src/matching_engine/*.cpp")
-
-add_executable(market_engine 
-    ${ENGINE_SRCS} 
-    ${PROTOCOL_SRCS}
+# Create the library from the source files directly in src/
+add_library(matching_engine 
+    src/Order.cpp 
+    src/OrderBook.cpp
 )
 
-file(GLOB CLIENT_SRCS "src/trading_client/*.cpp")
-
-add_executable(trading_client 
-    ${CLIENT_SRCS} 
-    ${PROTOCOL_SRCS}
-)
+# Benchmark executable
+add_executable(bench_engine benchmarks/bench.cpp)
+target_link_libraries(bench_engine matching_engine)
