@@ -2,7 +2,7 @@
 ![CMake](https://img.shields.io/badge/CMake-%23008FBA.svg?style=for-the-badge&logo=cmake&logoColor=white)
 
 
-# High Performance Matching Engine
+# Order Book Matching Engine
 A highly optimized C++ order book matching engine. [TODO: more detailed/descriptive description]
 
 Concise performance metrics...
@@ -39,13 +39,14 @@ Read more in PDF about final product
 
 **Build System:** CMake (version 4.2)
 
+**Testing:** CTest (version 4.2)
+
+### Development
+
 **Formatter:** Clang-Format (Google Style, see `/.clang-format`)
 
 **Linter:** Clang-Tidy (see `.clang-tidy`) 
 
-**Testing:** ???
-
-any other ???
 
 ## File Structure
 
@@ -54,8 +55,9 @@ any other ???
 │   .clang-tidy
 │   .gitignore
 │   CMakeLists.txt
+│   README.md
 ├───benchmarks
-│       bench.cpp
+│       bench_matching_engine.cpp
 ├───docs
 │       diagrams.txt
 ├───include
@@ -67,11 +69,12 @@ any other ???
 ├───scripts
 │       dashboard.py
 ├───src
-│       main.cpp
-│       Order.cpp
-│       OrderBook.cpp
+│   │   main.cpp
+│   └───matching_engine
+│           Order.cpp
+│           OrderBook.cpp
 └───tests
-        test.cpp
+        test_order_book.cpp
 ```
 
 Use the following command to update file structure (Windows), make sure that the /build folder is deleted:
@@ -81,7 +84,7 @@ tree /f
 
 blah blah short explanation about file structure
 
-## Run & Contribute
+## Build and Run
 
 ### Prerequisites
 - **C++20 compiler** (MSVC, GCC, Clang, etc)
@@ -95,25 +98,35 @@ blah blah short explanation about file structure
 
     Install VS Code and use extensions: `C/C++`, `CMake Tools` and `clangd` (make sure to disable IntelliSense for clangd to work)
 
-### Build using CMake
-Use the following commands to build the benchmark. On build, Clang-Tidy is also run and outputs warnings in terminal.
+### Build & Run Benchmark
+Use the following commands to build and run the benchmark (`/benchmark`).
 
+```powershell
+> cmake -S . -B build 
+> cmake --build build --config Release
+> .\build\Release\bench_engine.exe
 ```
-> cmake --build build
-> .\build\bench_engine.exe
+
+### Build & Run Tests
+Use the following commands to build and run the tests (`/tests`).
+
+```powershell
+> cmake -S . -B build 
+> cmake --build build --config Release
+> .\build\Release\unit_tests.exe  # run tests directly, or
+> ctest --test-dir build # run tests via ctest
 ```
 
-### Test using CMake
+### Build & Run During Development
+Modify the `src/main.cpp` file to test individual features during development, which will be compiled into the `matching_engine.exe` file.
 
-???
-
-### Run during development
-Use the following commands to compile the matching engine in order to test specific features by changing `src/main.cpp`.
-
+```powershell
+> cmake -S . -B build 
+> cmake --build build --config Debug
+> .\build\Release\matching_engine.exe
 ```
-> clang++ -std=c++20 -O3 -I include src/*.cpp -o test.exe
-> .\test.exe
-```
+
+## Contribute
 
 ### Set up Clang-Format in VS Code
 Clang-Format is used for formatting the code. This guarantees that code is consistent across all files (spacing, tab size, etc)

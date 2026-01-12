@@ -1,8 +1,6 @@
-#include <iostream>
-
+#include "matching_engine/OrderBook.hpp"
 #include "common/Types.hpp"
 #include "matching_engine/Order.hpp"
-#include "matching_engine/OrderBook.hpp"
 
 OrderBook::OrderBook() = default;
 
