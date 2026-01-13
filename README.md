@@ -8,7 +8,7 @@ Single threaded, deterministic
 
 Concise performance metrics...
 
-Image somehow? Latency histogram? Implementation visualization from blog post?
+Image? Latency histogram? Implementation visualization from blog post?
 
 ## Features
 
@@ -26,23 +26,23 @@ _Note: the modify-order operation has been left out for simplicity. Modifying an
 
 ## Performance
 
-Some performance stats to quickly showcase to recruiters
+Some benchmark details and performance stats to quickly showcase to recruiters
 
-Read more in PDF about final product
+_Read more in PDF about final product below_
 
-## Document
-Want all information and details about the matching engine in a nicely structured document? View or download this pdf:
+## Project Report
+Do you want all the details about the implementation of the matching engine, techniques and optimizations used, and a detailed performance analysis? View or download the project report:
 
-PDF about final product (implementation / metrics / benchmarks / final product) (View | Download)
+Project Report (Coming soon) ( View | Download )
 
 _Found it interesting? Feel free to share it with friends or colleagues who might enjoy or benefit from it. Thank you ;)_
 
 ## Blog
 
-Want more details about the build process and development? Read my blog posts with visualizations, explanations, and more:
+Do you want more details about the build process, development and visualizations of the algorithms and data structures? Read my blog posts with visualizations, explanations, and more:
 
-- #1 : link
-- #2 : link
+- #1 : (Coming soon)
+- #2 : (Coming soon)
 
 _Enjoyed the blog? Feel free to share it with friends or colleagues who might enjoy or benefit from it. Thank you ;)_
 
@@ -166,3 +166,7 @@ Clang-Format is used for formatting the code. This guarantees that code is consi
 ## License
 
 ???
+
+---
+
+**Interested in more information or details?** Read the [PDF](#document) or [blog posts](#blog)! Or reach out to me on [LinkedIn](https://linkedin.com/in/tiespetersen), would love to answer questions and connect!
