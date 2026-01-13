@@ -37,6 +37,10 @@ vector<Trade> OrderBook::matchOrder(Order& order) {
             if (resting_order.isFilled()) {
                 orders_at_price.pop_front();
                 orders_by_id_.erase(resting_order.getOrderId());
+
+                if (orders_at_price.empty()) {
+                    opposite_book.erase(price);
+                }
             }
         }
     } else {
@@ -63,8 +67,12 @@ vector<Trade> OrderBook::matchOrder(Order& order) {
 
             // If resting order is filled, remove from book + hashmap
             if (resting_order.isFilled()) {
-                orders_at_price.pop_front();
                 orders_by_id_.erase(resting_order.getOrderId());
+                orders_at_price.pop_front();
+
+                if (orders_at_price.empty()) {
+                    opposite_book.erase(price);
+                }
             }
         }
     }

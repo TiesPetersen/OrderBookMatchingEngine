@@ -123,7 +123,7 @@ Modify the `src/main.cpp` file to test individual features during development, w
 ```powershell
 > cmake -S . -B build 
 > cmake --build build --config Debug
-> .\build\Release\matching_engine.exe
+> .\build\Debug\matching_engine.exe
 ```
 
 ## Contribute

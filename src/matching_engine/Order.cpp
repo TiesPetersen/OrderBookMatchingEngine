@@ -5,10 +5,9 @@
 
 Order::Order() = default;
 
-Order::Order(OrderID order_id, Timestamp timestamp, Side side,
-             OrderType order_type, Price price, Volume volume)
+Order::Order(OrderID order_id, Side side, OrderType order_type, Price price,
+             Volume volume)
     : order_id_(order_id),
-      timestamp_(timestamp),
       side_(side),
       order_type_(order_type),
       price_(price),
@@ -19,10 +18,6 @@ Order::Order(OrderID order_id, Timestamp timestamp, Side side,
 
 OrderID Order::getOrderId() const {
     return order_id_;
-}
-
-Timestamp Order::getTimestamp() const {
-    return timestamp_;
 }
 
 Side Order::getSide() const {

@@ -8,18 +8,17 @@
 
 int main() {
     OrderBook orderBook;
-    const int num_orders = 100000;
+    const int num_orders = 2000000;
 
-    // 1. Pre-allocate memory and generate orders
-    // We do this OUTSIDE the timer so we measure the Engine, not memory allocation.
+    // Pre-allocate memory and generate orders
     std::vector<Order> orders;
     orders.reserve(num_orders);
 
     for (int i = 0; i < num_orders; ++i) {
         // Alternate BUY and SELL to simulate trading activity
         Side side = (i % 2 == 0) ? BUY : SELL;
-        Price price = 100.0;  // Same price to force collision/matching
-        orders.emplace_back(i, 0, side, LIMIT, price, 10);
+        Price price = 90.0 + (i % 21);  // Prices between 90 and 110
+        orders.push_back(Order(i, side, LIMIT, price, 10));
     }
 
     std::cout << "Benchmarking " << num_orders << " orders..." << std::endl;
