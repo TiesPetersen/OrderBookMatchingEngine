@@ -35,16 +35,16 @@ add_library(matching_engine_lib
     src/matching_engine/OrderBook.cpp
 )
 
-add_executable(matching_engine src/main.cpp)
-target_link_libraries(matching_engine matching_engine_lib)
+add_executable(run_engine src/main.cpp)
+target_link_libraries(run_engine matching_engine_lib)
 
 add_executable(benchmark_engine benchmarks/bench_matching_engine.cpp)
 target_link_libraries(benchmark_engine matching_engine_lib)
 
 enable_testing()
 
-add_executable(unit_tests
+add_executable(test_engine
     tests/test_order_book.cpp
 )
-target_link_libraries(unit_tests matching_engine_lib)
-add_test(NAME MatchingEngineTests COMMAND unit_tests)
+target_link_libraries(test_engine matching_engine_lib)
+add_test(NAME MatchingEngineTests COMMAND test_engine)

@@ -91,39 +91,44 @@ blah blah short explanation about file structure
 - **CMake**
 
     Download, run installer, select `Add CMake to system PATH`
+
+### Extra / Optional
 - **LLVM** (for Clang-Format and Clang-Tidy)
 
     Download, run installer, select `Add LLVM to system PATH`
-- **VS Code** (optional)
+- **VS Code**
 
     Install VS Code and use extensions: `C/C++`, `CMake Tools` and `clangd` (make sure to disable IntelliSense for clangd to work)
 
 ### Build & Run Benchmark
-Use the following commands to build and run the benchmark (`/benchmark`).
+Use the following commands to build and run the benchmark (`/benchmark`). Uses `Release` build type for compiler optimizations.
 
+_Linux_
 ```powershell
-> cmake -S . -B build 
-> cmake --build build --config Release
-> .\build\Release\bench_engine.exe
+> cmake -S . -B build_release -DCMAKE_BUILD_TYPE=Release
+> cmake --build build_release
+> .\build_release\benchmark_engine.exe
 ```
 
 ### Build & Run Tests
 Use the following commands to build and run the tests (`/tests`).
 
+_Linux_
 ```powershell
-> cmake -S . -B build 
-> cmake --build build --config Release
-> .\build\Release\unit_tests.exe  # run tests directly, or
-> ctest --test-dir build # run tests via ctest
+> cmake -S . -B build_debug -DCMAKE_BUILD_TYPE=Debug
+> cmake --build build_debug
+> .\build_debug\test_engine.exe # run tests directly, or
+> ctest --test-dir build_debug # run tests via ctest
 ```
 
 ### Build & Run During Development
-Modify the `src/main.cpp` file to test individual features during development, which will be compiled into the `matching_engine.exe` file.
+Modify the `src/main.cpp` file to test individual features during development, which will be compiled into the `run_engine.exe` file.
 
+_Linux_
 ```powershell
-> cmake -S . -B build 
-> cmake --build build --config Debug
-> .\build\Debug\matching_engine.exe
+> cmake -S . -B build_debug -DCMAKE_BUILD_TYPE=Debug
+> cmake --build build_debug
+> .\build_debug\run_engine.exe
 ```
 
 ## Contribute

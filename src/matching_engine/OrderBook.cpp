@@ -19,8 +19,6 @@ vector<Trade> OrderBook::matchOrder(Order& order) {
             // Get best price level from opposite side
             auto& [price, orders_at_price] = *opposite_book.begin();
 
-            // TODO: clean up if empty?
-
             // Check if prices are matchable
             if (!canMatch(order, price)) {
                 break;
@@ -50,8 +48,6 @@ vector<Trade> OrderBook::matchOrder(Order& order) {
         while (!order.isFilled() && !opposite_book.empty()) {
             // Get best price level from opposite side
             auto& [price, orders_at_price] = *opposite_book.begin();
-
-            // TODO: clean up if empty?
 
             // Check if prices are matchable
             if (!canMatch(order, price)) {

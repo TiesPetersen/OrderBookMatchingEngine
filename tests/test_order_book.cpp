@@ -6,7 +6,7 @@ using namespace std;
 
 void test_placeholder() {
     // Placeholder test function
-    assert(1 + 1 == 2);
+    assert(1 + 1 == 1);
 }
 
 int main() {
