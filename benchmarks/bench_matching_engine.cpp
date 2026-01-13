@@ -8,7 +8,7 @@
 
 int main() {
     OrderBook orderBook;
-    const int num_orders = 2000000;
+    const int num_orders = 30000000;
 
     // Pre-allocate memory and generate orders
     std::vector<Order> orders;

@@ -4,8 +4,11 @@
 
 # Order Book Matching Engine
 A highly optimized C++ order book matching engine. [TODO: more detailed/descriptive description]
+Single threaded, deterministic
 
 Concise performance metrics...
+
+Image somehow? Latency histogram? Implementation visualization from blog post?
 
 ## Features
 
@@ -27,12 +30,21 @@ Some performance stats to quickly showcase to recruiters
 
 Read more in PDF about final product
 
-## Documents
+## Document
+Want all information and details about the matching engine in a nicely structured document? View or download this pdf:
 
-- PDF about final product (implementation / metrics / benchmarks / final product)
-- PDF about the build process (goals / teamwork / tools / frameworks / learning outcomes)
-- Dashboard?
-- ...
+PDF about final product (implementation / metrics / benchmarks / final product) (View | Download)
+
+_Found it interesting? Feel free to share it with friends or colleagues who might enjoy or benefit from it. Thank you ;)_
+
+## Blog
+
+Want more details about the build process and development? Read my blog posts with visualizations, explanations, and more:
+
+- #1 : link
+- #2 : link
+
+_Enjoyed the blog? Feel free to share it with friends or colleagues who might enjoy or benefit from it. Thank you ;)_
 
 ## Dependencies & Tooling
 **Language:** C++20
@@ -47,6 +59,44 @@ Read more in PDF about final product
 
 **Linter:** Clang-Tidy (see `.clang-tidy`) 
 
+## Build and Run
+
+### Prerequisites
+- **C++20 compiler** (MSVC, GCC, Clang, etc)
+- **CMake**
+
+    Download, run installer, select `Add CMake to system PATH`
+
+### Build & Run Benchmark
+Use the following commands to build and run the benchmark (`/benchmark`). Uses `Release` build type for compiler optimizations.
+
+_Linux_
+```powershell
+> cmake -S . -B build_release -DCMAKE_BUILD_TYPE=Release
+> cmake --build build_release
+> .\build_release\benchmark_engine.exe
+```
+
+### Build & Run Tests
+Use the following commands to build and run the tests (`/tests`).
+
+_Linux_
+```powershell
+> cmake -S . -B build_debug -DCMAKE_BUILD_TYPE=Debug
+> cmake --build build_debug
+> .\build_debug\test_engine.exe # run tests directly, or
+> ctest --test-dir build_debug # run tests via ctest
+```
+
+### Build & Run During Development
+Modify the `src/main.cpp` file to test individual features during development, which will be compiled into the `run_engine.exe` file.
+
+_Linux_
+```powershell
+> cmake -S . -B build_debug -DCMAKE_BUILD_TYPE=Debug
+> cmake --build build_debug
+> .\build_debug\run_engine.exe
+```
 
 ## File Structure
 
@@ -84,54 +134,15 @@ tree /f
 
 blah blah short explanation about file structure
 
-## Build and Run
+## Contribute
 
-### Prerequisites
-- **C++20 compiler** (MSVC, GCC, Clang, etc)
-- **CMake**
-
-    Download, run installer, select `Add CMake to system PATH`
-
-### Extra / Optional
+### Extra / Optional Tools
 - **LLVM** (for Clang-Format and Clang-Tidy)
 
     Download, run installer, select `Add LLVM to system PATH`
 - **VS Code**
 
     Install VS Code and use extensions: `C/C++`, `CMake Tools` and `clangd` (make sure to disable IntelliSense for clangd to work)
-
-### Build & Run Benchmark
-Use the following commands to build and run the benchmark (`/benchmark`). Uses `Release` build type for compiler optimizations.
-
-_Linux_
-```powershell
-> cmake -S . -B build_release -DCMAKE_BUILD_TYPE=Release
-> cmake --build build_release
-> .\build_release\benchmark_engine.exe
-```
-
-### Build & Run Tests
-Use the following commands to build and run the tests (`/tests`).
-
-_Linux_
-```powershell
-> cmake -S . -B build_debug -DCMAKE_BUILD_TYPE=Debug
-> cmake --build build_debug
-> .\build_debug\test_engine.exe # run tests directly, or
-> ctest --test-dir build_debug # run tests via ctest
-```
-
-### Build & Run During Development
-Modify the `src/main.cpp` file to test individual features during development, which will be compiled into the `run_engine.exe` file.
-
-_Linux_
-```powershell
-> cmake -S . -B build_debug -DCMAKE_BUILD_TYPE=Debug
-> cmake --build build_debug
-> .\build_debug\run_engine.exe
-```
-
-## Contribute
 
 ### Set up Clang-Format in VS Code
 Clang-Format is used for formatting the code. This guarantees that code is consistent across all files (spacing, tab size, etc)

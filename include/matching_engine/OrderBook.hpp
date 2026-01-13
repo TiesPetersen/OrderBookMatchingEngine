@@ -12,9 +12,9 @@ using namespace std;
 
 class OrderBook {
    private:
-    std::map<Price, std::deque<Order>, greater<Price>> buy_orders_by_price_;
-    std::map<Price, std::deque<Order>, less<Price>> sell_orders_by_price_;
-    std::unordered_map<OrderID, Order> orders_by_id_;
+    map<Price, std::deque<Order>, greater<Price>> buy_orders_by_price_;
+    map<Price, std::deque<Order>, less<Price>> sell_orders_by_price_;
+    unordered_map<OrderID, Order> orders_by_id_;
 
     // Helpers
     vector<Trade> matchOrder(Order& order);

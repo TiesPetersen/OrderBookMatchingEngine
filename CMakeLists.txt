@@ -24,7 +24,7 @@ if(MSVC)
     set(CMAKE_CXX_FLAGS_DEBUG "/Zi /Ob0 /Od /RTC1")
 else()
     # --- LINUX / MAC (Clang / GCC) ---
-    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -march=native -DNDEBUG")
+    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -march=native -funroll-loops -DNDEBUG")
     set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -Wall -Wextra")
 endif()
 
