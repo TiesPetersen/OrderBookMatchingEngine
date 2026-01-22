@@ -74,7 +74,7 @@ _Linux_
 ```powershell
 > cmake -S . -B build_release -DCMAKE_BUILD_TYPE=Release
 > cmake --build build_release
-> .\build_release\benchmark_engine.exe
+> ./build_release/benchmark_engine
 ```
 
 ### Build & Run Tests
@@ -84,7 +84,7 @@ _Linux_
 ```powershell
 > cmake -S . -B build_debug -DCMAKE_BUILD_TYPE=Debug
 > cmake --build build_debug
-> .\build_debug\test_engine.exe # run tests directly, or
+> ./build_debug/test_engine # run tests directly, or
 > ctest --test-dir build_debug # run tests via ctest
 ```
 
@@ -95,7 +95,7 @@ _Linux_
 ```powershell
 > cmake -S . -B build_debug -DCMAKE_BUILD_TYPE=Debug
 > cmake --build build_debug
-> .\build_debug\run_engine.exe
+> ./build_debug/run_engine
 ```
 
 ## File Structure
