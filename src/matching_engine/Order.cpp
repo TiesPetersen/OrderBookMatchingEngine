@@ -6,13 +6,14 @@
 Order::Order() = default;
 
 Order::Order(OrderID order_id, Side side, OrderType order_type, Price price,
-             Volume volume)
+             Volume volume, OrderID cancel_order_id)
     : order_id_(order_id),
       side_(side),
       order_type_(order_type),
       price_(price),
       volume_(volume),
-      filled_volume_(0) {}
+      filled_volume_(0),
+      cancel_order_id_(cancel_order_id) {}
 
 // Getter method implementations
 
@@ -42,6 +43,10 @@ Volume Order::getFilledVolume() const {
 
 Volume Order::getRemainingVolume() const {
     return volume_ - filled_volume_;
+}
+
+OrderID Order::getCancelOrderId() const {
+    return cancel_order_id_;
 }
 
 bool Order::isFilled() const {

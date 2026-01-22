@@ -1,45 +1,127 @@
+#include <algorithm>
 #include <chrono>
 #include <iostream>
+#include <random>
 #include <vector>
+
+using namespace std;
 
 #include "common/Types.hpp"
 #include "matching_engine/Order.hpp"
 #include "matching_engine/OrderBook.hpp"
 
+const int kMinPrice = 800'00;
+const int kMaxPrice = 1200'00;
+const int kStartPrice = 1000'00;
+
 int main() {
     OrderBook orderBook;
-    const int num_orders = 30000000;
+    const int num_orders = 3000;
 
-    // Pre-allocate memory and generate orders
-    std::vector<Order> orders;
+    // TODO: warm-up + populate book with initial orders
+
+    random_device rd;
+    default_random_engine generator(rd());
+
+    // Price movement distribution
+    normal_distribution<double> price_difference(0.0, 10.0);
+    double current_mid_price = kStartPrice;
+
+    // Type distribution: 0 for MARKET, 1 for LIMIT, 2 for CANCEL
+    discrete_distribution<int> type_distribution({10, 45, 45});
+
+    // Side distribution: 0 for BUY, 1 for SELL
+    uniform_int_distribution<int> side_distribution(0, 1);
+
+    // Price distribution for limit orders
+    normal_distribution<double> price_offset_distribution(0.0, 5.0);
+
+    // Volume distribution
+    geometric_distribution<int> volume_distribution(0.2);
+
+    // Pre-allocate memory
+    vector<Order> orders;
     orders.reserve(num_orders);
 
+    // Generate Orders
     for (int i = 0; i < num_orders; ++i) {
-        // Alternate BUY and SELL to simulate trading activity
-        Side side = (i % 2 == 0) ? BUY : SELL;
-        Price price = 90.0 + (i % 21);  // Prices between 90 and 110
-        orders.push_back(Order(i, side, LIMIT, price, 10));
+        // Simulate mid-price movement
+        current_mid_price += price_difference(generator);
+        current_mid_price = max<double>(current_mid_price, kMinPrice);
+        current_mid_price = min<double>(current_mid_price, kMaxPrice);
+
+        // Order type
+        auto type = static_cast<OrderType>(type_distribution(generator));
+
+        // CANCEL order
+        if (type == CANCEL) {
+            cout << "Generating CANCEL order\n";
+            if (!orders.empty()) {
+                // Randomly select an existing order to cancel
+                uniform_int_distribution<size_t> index_distribution(
+                    0, orders.size() - 1);
+                size_t index_to_cancel = index_distribution(generator);
+                OrderID order_id_to_cancel =
+                    orders[index_to_cancel].getOrderId();
+
+                orders.emplace_back(i, BUY, CANCEL, 0, 0, order_id_to_cancel);
+            }
+            continue;
+        }
+
+        // MARKET or LIMIT order
+
+        // Order side
+        Side side = (side_distribution(generator) == 0) ? BUY : SELL;
+
+        // Order price
+        Price price;
+        if (type == LIMIT) {
+            int price_offset = price_offset_distribution(generator);
+            price = static_cast<Price>(current_mid_price + price_offset);
+            price = max<Price>(price, kMinPrice);
+            price = min<Price>(price, kMaxPrice);
+        } else {
+            price = 0;  // Price is not used for MARKET orders
+        }
+
+        // Order volume
+        Volume volume = volume_distribution(generator);
+
+        orders.emplace_back(i, side, type, price, volume);
     }
 
-    std::cout << "Benchmarking " << num_orders << " orders..." << std::endl;
-
-    // 2. Start Timer
-    auto start = std::chrono::high_resolution_clock::now();
-
-    // 3. Execute Engine
+    // print generated orders
     for (const auto& order : orders) {
-        orderBook.PlaceOrder(order);
+        cout << "OrderID: " << order.getOrderId()
+             << ", Side: " << (order.getSide() == BUY ? "BUY" : "SELL")
+             << ", Type: "
+             << (order.getOrderType() == LIMIT
+                     ? "LIMIT"
+                     : (order.getOrderType() == MARKET ? "MARKET" : "CANCEL"))
+             << ", Price: " << order.getPrice() / 100.0
+             << ", Volume: " << order.getVolume() << "\n";
     }
 
-    // 4. Stop Timer
-    auto end = std::chrono::high_resolution_clock::now();
+    // cout << "Benchmarking " << num_orders << " orders..." << "\n";
 
-    // 5. Calculate Metrics
-    std::chrono::duration<double> diff = end - start;
-    double seconds = diff.count();
+    // // Start Timer
+    // auto start = chrono::high_resolution_clock::now();
 
-    std::cout << "Time: " << seconds << " seconds\n";
-    std::cout << "Throughput: " << (num_orders / seconds) << " orders/second\n";
+    // // Execute Engine
+    // for (const auto& order : orders) {
+    //     orderBook.PlaceOrder(order);
+    // }
 
-    return 0;
+    // // Stop Timer
+    // auto end = chrono::high_resolution_clock::now();
+
+    // // Calculate Metrics
+    // chrono::duration<double> diff = end - start;
+    // double seconds = diff.count();
+
+    // cout << "Time: " << seconds << " seconds" << "\n";
+    // cout << "Throughput: " << (num_orders / seconds) << " orders/second"
+    //      << "\n";
+    // return 0;
 }

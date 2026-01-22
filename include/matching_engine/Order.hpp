@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include "common/Types.hpp"
 
 class Order {
@@ -10,13 +11,14 @@ class Order {
     Price price_;
     Volume volume_;
     Volume filled_volume_;
+    OrderID cancel_order_id_;
 
    public:
     // Constructor
     Order();
 
     Order(OrderID order_id, Side side, OrderType order_type, Price price,
-          Volume volume);
+          Volume volume, OrderID cancel_order_id = INT64_MAX);
 
     // Getter methods
     OrderID getOrderId() const;
@@ -26,6 +28,7 @@ class Order {
     Volume getVolume() const;
     Volume getFilledVolume() const;
     Volume getRemainingVolume() const;
+    OrderID getCancelOrderId() const;
     bool isFilled() const;
 
     // Setter methods
