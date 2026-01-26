@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <chrono>
+#include <fstream>
 #include <iostream>
 #include <random>
 #include <vector>
@@ -43,12 +44,19 @@ int main() {
     vector<Order> orders;
     orders.reserve(num_orders);
 
+    // Price movement array
+    vector<double> price_movements;
+    price_movements.reserve(num_orders);
+
     // Generate Orders
     for (int i = 0; i < num_orders; ++i) {
         // Simulate mid-price movement
         current_mid_price += price_difference(generator);
         current_mid_price = max<double>(current_mid_price, kMinPrice);
         current_mid_price = min<double>(current_mid_price, kMaxPrice);
+
+        // Save price movement
+        price_movements.push_back(current_mid_price / 100.0);
 
         // Order type
         auto type = static_cast<OrderType>(type_distribution(generator));
@@ -102,6 +110,13 @@ int main() {
              << ", Price: " << order.getPrice() / 100.0
              << ", Volume: " << order.getVolume() << "\n";
     }
+
+    // write order market order price to text file (for plotting purposes)
+    ofstream outfile("price_movement.txt");
+    for (const auto& price : price_movements) {
+        outfile << price << "\n";
+    }
+    outfile.close();
 
     // cout << "Benchmarking " << num_orders << " orders..." << "\n";
 

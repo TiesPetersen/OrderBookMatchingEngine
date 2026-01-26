@@ -5,6 +5,7 @@ bin/
 cache/
 .cache/
 lib/
+env/
 
 *.exe
 *.out
