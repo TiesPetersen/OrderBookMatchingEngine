@@ -25,7 +25,7 @@ int main() {
     default_random_engine generator(rd());
 
     // Price movement distribution
-    normal_distribution<double> price_difference(0.0, 10.0);
+    normal_distribution<double> price_difference(0.0, 15.0);
     double current_mid_price = kStartPrice;
 
     // Type distribution: 0 for MARKET, 1 for LIMIT, 2 for CANCEL
@@ -35,10 +35,10 @@ int main() {
     uniform_int_distribution<int> side_distribution(0, 1);
 
     // Price distribution for limit orders
-    normal_distribution<double> price_offset_distribution(0.0, 5.0);
+    normal_distribution<double> price_offset_distribution(0.0, 50.0);
 
     // Volume distribution
-    geometric_distribution<int> volume_distribution(0.2);
+    geometric_distribution<int> volume_distribution(0.1);
 
     // Pre-allocate memory
     vector<Order> orders;
@@ -63,7 +63,6 @@ int main() {
 
         // CANCEL order
         if (type == CANCEL) {
-            cout << "Generating CANCEL order\n";
             if (!orders.empty()) {
                 // Randomly select an existing order to cancel
                 uniform_int_distribution<size_t> index_distribution(
@@ -99,22 +98,15 @@ int main() {
         orders.emplace_back(i, side, type, price, volume);
     }
 
-    // print generated orders
-    for (const auto& order : orders) {
-        cout << "OrderID: " << order.getOrderId()
-             << ", Side: " << (order.getSide() == BUY ? "BUY" : "SELL")
-             << ", Type: "
-             << (order.getOrderType() == LIMIT
-                     ? "LIMIT"
-                     : (order.getOrderType() == MARKET ? "MARKET" : "CANCEL"))
-             << ", Price: " << order.getPrice() / 100.0
-             << ", Volume: " << order.getVolume() << "\n";
-    }
-
-    // write order market order price to text file (for plotting purposes)
+    // write price movement (+ limit order price if LIMIT) to text file
     ofstream outfile("price_movement.txt");
-    for (const auto& price : price_movements) {
-        outfile << price << "\n";
+    for (size_t i = 0; i < orders.size(); ++i) {
+        const auto& order = orders[i];
+        outfile << price_movements[i] << "\n";
+        if (order.getOrderType() == LIMIT) {
+            outfile << price_movements[i] << " " << order.getPrice() / 100.0
+                    << "\n";
+        }
     }
     outfile.close();
 
