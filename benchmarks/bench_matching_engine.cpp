@@ -35,8 +35,7 @@ int main() {
     uniform_int_distribution<int> side_distribution(0, 1);
 
     // Price distribution for limit orders
-    // normal_distribution<double> price_offset_distribution(0.0, 10.0);
-    geometric_distribution<int> price_offset_distribution(0.2);
+    geometric_distribution<int> price_offset_distribution(0.3);
 
     // Volume distribution
     geometric_distribution<int> volume_distribution(0.1);

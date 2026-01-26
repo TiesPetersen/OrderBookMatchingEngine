@@ -24,14 +24,14 @@ if limit_orders:
     
     if buy_orders:
         xs, ys = zip(*buy_orders)
-        plt.scatter(xs, ys, color='green', label='Buy Limit Orders', zorder=3, s=2, alpha=0.8, marker='^')
+        plt.scatter(xs, ys, color='green', label='Buy Limit Orders', zorder=3, s=4, alpha=0.5, marker='^')
     if sell_orders:
         xs, ys = zip(*sell_orders)
-        plt.scatter(xs, ys, color='red', label='Sell Limit Orders', zorder=3, s=2, alpha=0.8, marker='v')
+        plt.scatter(xs, ys, color='red', label='Sell Limit Orders', zorder=3, s=4, alpha=0.5, marker='v')
 
 plt.xlabel('Tick')
 plt.ylabel('Base Price')
-plt.title('Limit Orders Generated + Base Price Movement')
+plt.title('Synthetic Limit Orders over Simulated Price Movement')
 plt.grid(True, alpha=0.3, linestyle='--')
 plt.legend()
 plt.ticklabel_format(style='plain', axis='y', useOffset=False)
