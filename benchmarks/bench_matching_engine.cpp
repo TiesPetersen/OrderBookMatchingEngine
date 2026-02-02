@@ -1,8 +1,9 @@
 #include <algorithm>
 #include <chrono>
-#include <fstream>
 #include <iostream>
+#include <numeric>
 #include <random>
+#include <ranges>
 #include <vector>
 
 using namespace std;
@@ -16,10 +17,11 @@ const int kMaxPrice = 1200'00;
 const int kStartPrice = 1000'00;
 
 int main() {
-    OrderBook orderBook;
     const int num_orders = 3000;
 
     // TODO: warm-up + populate book with initial orders
+
+    // ----- Random Order Generation -----
 
     random_device rd;
     default_random_engine generator(rd());
@@ -44,19 +46,12 @@ int main() {
     vector<Order> orders;
     orders.reserve(num_orders);
 
-    // Price movement array
-    vector<double> price_movements;
-    price_movements.reserve(num_orders);
-
     // Generate Orders
-    for (int i = 0; i < num_orders; ++i) {
+    while (orders.size() < num_orders) {
         // Simulate mid-price movement
         current_mid_price += price_difference(generator);
         current_mid_price = max<double>(current_mid_price, kMinPrice);
         current_mid_price = min<double>(current_mid_price, kMaxPrice);
-
-        // Save price movement
-        price_movements.push_back(current_mid_price / 100.0);
 
         // Order type
         auto type = static_cast<OrderType>(type_distribution(generator));
@@ -71,7 +66,15 @@ int main() {
                 OrderID order_id_to_cancel =
                     orders[index_to_cancel].getOrderId();
 
-                orders.emplace_back(i, BUY, CANCEL, 0, 0, order_id_to_cancel);
+                // make sure we don't try to cancel an order that is already a CANCEL
+                while (orders[index_to_cancel].getOrderType() == CANCEL) {
+                    index_to_cancel = index_distribution(generator);
+                    order_id_to_cancel = orders[index_to_cancel].getOrderId();
+                }
+
+                // Create CANCEL order
+                orders.emplace_back(orders.size(), BUY, CANCEL, 0, 0,
+                                    order_id_to_cancel);
             }
             continue;
         }
@@ -101,40 +104,61 @@ int main() {
         // Order volume
         Volume volume = volume_distribution(generator);
 
-        orders.emplace_back(i, side, type, price, volume);
+        orders.emplace_back(orders.size(), side, type, price, volume);
     }
 
-    // write price movement (+ limit order price if LIMIT) to text file
-    ofstream outfile("price_movement.txt");
-    for (size_t i = 0; i < orders.size(); ++i) {
-        const auto& order = orders[i];
-        outfile << price_movements[i] << "\n";
-        if (order.getOrderType() == LIMIT) {
-            outfile << price_movements[i] << " " << order.getPrice() / 100.0
-                    << " " << static_cast<int>(order.getSide()) << "\n";
-        }
+    // ----- Latency Benchmark Execution -----
+
+    cout << "Benchmarking using " << num_orders << " orders..." << "\n";
+
+    vector<long long> latencies;  // in nanoseconds
+    latencies.reserve(num_orders);
+
+    OrderBook latency_orderBook;
+    for (const auto& order : orders) {
+        auto start = chrono::high_resolution_clock::now();
+        latency_orderBook.PlaceOrder(order);
+        auto end = chrono::high_resolution_clock::now();
+        auto diff = chrono::duration_cast<chrono::nanoseconds>(end - start);
+        latencies.push_back(static_cast<long long>(diff.count()));
     }
-    outfile.close();
 
-    // cout << "Benchmarking " << num_orders << " orders..." << "\n";
+    // ----- Results Output -----
 
-    // // Start Timer
-    // auto start = chrono::high_resolution_clock::now();
+    // Average latency
+    double average_latency =
+        accumulate(latencies.begin(), latencies.end(), 0.0) / latencies.size();
+    cout << "Average latency: " << average_latency << " ns" << "\n";
 
-    // // Execute Engine
-    // for (const auto& order : orders) {
-    //     orderBook.PlaceOrder(order);
-    // }
+    // Min and Max latency
+    auto [min_latency_it, max_latency_it] =
+        ranges::minmax_element(latencies, std::less<>());
+    cout << "Min latency: " << *min_latency_it << " ns" << "\n";
+    cout << "Max latency: " << *max_latency_it << " ns" << "\n";
 
-    // // Stop Timer
-    // auto end = chrono::high_resolution_clock::now();
+    // P50, P90, P99, P99.9 latencies
+    ranges::sort(latencies, std::less<>());
+    auto p50 = latencies[static_cast<size_t>(0.50 * (latencies.size() - 1))];
+    auto p90 = latencies[static_cast<size_t>(0.90 * (latencies.size() - 1))];
+    auto p99 = latencies[static_cast<size_t>(0.99 * (latencies.size() - 1))];
+    auto p999 = latencies[static_cast<size_t>(0.999 * (latencies.size() - 1))];
+    cout << "P50 latency: " << p50 << " ns" << "\n";
+    cout << "P90 latency: " << p90 << " ns" << "\n";
+    cout << "P99 latency: " << p99 << " ns" << "\n";
+    cout << "P99.9 latency: " << p999 << " ns" << "\n";
 
-    // // Calculate Metrics
-    // chrono::duration<double> diff = end - start;
-    // double seconds = diff.count();
+    // ----- Throughput Benchmark Execution -----
 
-    // cout << "Time: " << seconds << " seconds" << "\n";
-    // cout << "Throughput: " << (num_orders / seconds) << " orders/second"
-    //      << "\n";
-    // return 0;
+    OrderBook throughput_orderBook;
+    auto throughput_start = chrono::high_resolution_clock::now();
+    for (const auto& order : orders) {
+        throughput_orderBook.PlaceOrder(order);
+    }
+    auto throughput_end = chrono::high_resolution_clock::now();
+    auto total_duration = chrono::duration_cast<chrono::milliseconds>(
+                              throughput_end - throughput_start)
+                              .count();
+    double throughput = static_cast<double>(num_orders) /
+                        (static_cast<double>(total_duration) / 1000.0);
+    cout << "Throughput: " << throughput << " orders/sec" << "\n";
 }
