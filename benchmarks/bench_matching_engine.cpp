@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <chrono>
+#include <fstream>
 #include <iostream>
 #include <numeric>
 #include <random>
@@ -17,11 +18,13 @@ const int kMaxPrice = 1200'00;
 const int kStartPrice = 1000'00;
 
 int main() {
-    const int num_orders = 3000;
+    const int num_orders = 30000000;
 
     // TODO: warm-up + populate book with initial orders
 
     // ----- Random Order Generation -----
+
+    cout << "Generating " << num_orders << " random orders..." << "\n";
 
     random_device rd;
     default_random_engine generator(rd());
@@ -58,6 +61,7 @@ int main() {
 
         // CANCEL order
         if (type == CANCEL) {
+            continue;
             if (!orders.empty()) {
                 // Randomly select an existing order to cancel
                 uniform_int_distribution<size_t> index_distribution(
@@ -109,7 +113,8 @@ int main() {
 
     // ----- Latency Benchmark Execution -----
 
-    cout << "Benchmarking using " << num_orders << " orders..." << "\n";
+    cout << "Running latency benchmark using " << num_orders << " orders..."
+         << "\n";
 
     vector<long long> latencies;  // in nanoseconds
     latencies.reserve(num_orders);
@@ -123,18 +128,25 @@ int main() {
         latencies.push_back(static_cast<long long>(diff.count()));
     }
 
+    // save latencies to a file for further analysis
+    ofstream latency_file("latencies.txt");
+    for (const auto& latency : latencies) {
+        latency_file << latency << "\n";
+    }
+    latency_file.close();
+
     // ----- Results Output -----
 
     // Average latency
     double average_latency =
         accumulate(latencies.begin(), latencies.end(), 0.0) / latencies.size();
-    cout << "Average latency: " << average_latency << " ns" << "\n";
+    cout << "- Average latency: " << average_latency << " ns" << "\n";
 
     // Min and Max latency
     auto [min_latency_it, max_latency_it] =
         ranges::minmax_element(latencies, std::less<>());
-    cout << "Min latency: " << *min_latency_it << " ns" << "\n";
-    cout << "Max latency: " << *max_latency_it << " ns" << "\n";
+    cout << "- Min latency: " << *min_latency_it << " ns" << "\n";
+    cout << "- Max latency: " << *max_latency_it << " ns" << "\n";
 
     // P50, P90, P99, P99.9 latencies
     ranges::sort(latencies, std::less<>());
@@ -142,12 +154,15 @@ int main() {
     auto p90 = latencies[static_cast<size_t>(0.90 * (latencies.size() - 1))];
     auto p99 = latencies[static_cast<size_t>(0.99 * (latencies.size() - 1))];
     auto p999 = latencies[static_cast<size_t>(0.999 * (latencies.size() - 1))];
-    cout << "P50 latency: " << p50 << " ns" << "\n";
-    cout << "P90 latency: " << p90 << " ns" << "\n";
-    cout << "P99 latency: " << p99 << " ns" << "\n";
-    cout << "P99.9 latency: " << p999 << " ns" << "\n";
+    cout << "- P50 latency: " << p50 << " ns" << "\n";
+    cout << "- P90 latency: " << p90 << " ns" << "\n";
+    cout << "- P99 latency: " << p99 << " ns" << "\n";
+    cout << "- P99.9 latency: " << p999 << " ns" << "\n";
 
     // ----- Throughput Benchmark Execution -----
+
+    cout << "Running throughput benchmark using " << num_orders << " orders..."
+         << "\n";
 
     OrderBook throughput_orderBook;
     auto throughput_start = chrono::high_resolution_clock::now();
@@ -160,5 +175,5 @@ int main() {
                               .count();
     double throughput = static_cast<double>(num_orders) /
                         (static_cast<double>(total_duration) / 1000.0);
-    cout << "Throughput: " << throughput << " orders/sec" << "\n";
+    cout << "- Throughput: " << throughput / 1e6 << "M orders/sec" << "\n";
 }

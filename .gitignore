@@ -24,3 +24,5 @@ Makefile
 !CMakeLists.txt
 
 *.log
+
+latencies.txt
