@@ -2,6 +2,7 @@
 
 #include <deque>
 #include <map>
+#include <memory>
 #include <unordered_map>
 #include <vector>
 
@@ -12,9 +13,9 @@ using namespace std;
 
 class OrderBook {
    private:
-    map<Price, std::deque<Order>, greater<Price>> buy_orders_by_price_;
-    map<Price, std::deque<Order>, less<Price>> sell_orders_by_price_;
-    unordered_map<OrderID, Order> orders_by_id_;
+    map<Price, deque<shared_ptr<Order>>, greater<Price>> buy_orders_by_price_;
+    map<Price, deque<shared_ptr<Order>>, less<Price>> sell_orders_by_price_;
+    unordered_map<OrderID, shared_ptr<Order>> orders_by_id_;
 
     // Helpers
     vector<Trade> matchOrder(Order& order);

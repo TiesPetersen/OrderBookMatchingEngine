@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <vector>
 
 #include "common/Types.hpp"
@@ -25,19 +26,19 @@ vector<Trade> OrderBook::matchOrder(Order& order) {
             }
 
             // Get front order from queue
-            Order& resting_order = orders_at_price.front();
+            shared_ptr<Order> resting_order = orders_at_price.front();
 
             // Execute trade
-            Trade trade = executeMatch(order, resting_order);
+            Trade trade = executeMatch(order, *resting_order);
             trades.push_back(trade);
 
             // If resting order is filled, remove from book + hashmap
-            if (resting_order.isFilled()) {
+            if (resting_order->isFilled()) {
                 orders_at_price.pop_front();
-                orders_by_id_.erase(resting_order.getOrderId());
+                orders_by_id_.erase(resting_order->getOrderId());
 
                 if (orders_at_price.empty()) {
-                    opposite_book.erase(price);
+                    opposite_book.erase(opposite_book.begin());
                 }
             }
         }
@@ -55,19 +56,19 @@ vector<Trade> OrderBook::matchOrder(Order& order) {
             }
 
             // Get front order from queue
-            Order& resting_order = orders_at_price.front();
+            shared_ptr<Order> resting_order = orders_at_price.front();
 
             // Execute trade
-            Trade trade = executeMatch(order, resting_order);
+            Trade trade = executeMatch(order, *resting_order);
             trades.push_back(trade);
 
             // If resting order is filled, remove from book + hashmap
-            if (resting_order.isFilled()) {
-                orders_by_id_.erase(resting_order.getOrderId());
+            if (resting_order->isFilled()) {
+                orders_by_id_.erase(resting_order->getOrderId());
                 orders_at_price.pop_front();
 
                 if (orders_at_price.empty()) {
-                    opposite_book.erase(price);
+                    opposite_book.erase(opposite_book.begin());
                 }
             }
         }
@@ -78,8 +79,8 @@ vector<Trade> OrderBook::matchOrder(Order& order) {
 
 Trade OrderBook::executeMatch(Order& incoming_order, Order& resting_order) {
     // Determine trade volume
-    Volume trade_volume = std::min(incoming_order.getRemainingVolume(),
-                                   resting_order.getRemainingVolume());
+    Volume trade_volume = min(incoming_order.getRemainingVolume(),
+                              resting_order.getRemainingVolume());
 
     // Determine trade price (use resting order price)
     Price trade_price = resting_order.getPrice();
@@ -114,15 +115,18 @@ bool OrderBook::canMatch(const Order& incoming, Price resting_price) const {
 }
 
 void OrderBook::addOrderToBook(const Order& order) {
+    // Create a shared pointer for the order
+    auto order_ptr = make_shared<Order>(order);
+
     // Add to appropriate book based on side
     if (order.getSide() == BUY) {
-        buy_orders_by_price_[order.getPrice()].push_back(order);
+        buy_orders_by_price_[order.getPrice()].push_back(order_ptr);
     } else {
-        sell_orders_by_price_[order.getPrice()].push_back(order);
+        sell_orders_by_price_[order.getPrice()].push_back(order_ptr);
     }
 
     // Add to hashmap
-    orders_by_id_[order.getOrderId()] = order;
+    orders_by_id_[order.getOrderId()] = order_ptr;
 }
 
 vector<Trade> OrderBook::PlaceOrder(Order order) {
@@ -139,7 +143,52 @@ vector<Trade> OrderBook::PlaceOrder(Order order) {
 }
 
 void OrderBook::CancelOrder(OrderID orderId) {
-    // TODO: Implement order cancellation logic
+    // Find the order in the hashmap
+    auto it = orders_by_id_.find(orderId);
+    if (it == orders_by_id_.end()) {
+        // Order not found
+        return;
+    }
+    shared_ptr<Order> order = it->second;
+
+    Price price = order->getPrice();
+    Side side = order->getSide();
+
+    // Remove from order book
+    if (side == BUY) {
+        auto book_it = buy_orders_by_price_.find(price);
+        if (book_it != buy_orders_by_price_.end()) {
+            // Remove order from deque at this price level
+            auto& orders_at_price = book_it->second;
+            erase_if(orders_at_price,
+                     [orderId](const shared_ptr<Order>& current_order) {
+                         return current_order->getOrderId() == orderId;
+                     });
+
+            // If no more orders at this price, remove the price level
+            if (orders_at_price.empty()) {
+                buy_orders_by_price_.erase(book_it);
+            }
+        }
+    } else {
+        auto book_it = sell_orders_by_price_.find(price);
+        if (book_it != sell_orders_by_price_.end()) {
+            // Remove order from deque at this price level
+            auto& orders_at_price = book_it->second;
+            erase_if(orders_at_price,
+                     [orderId](const shared_ptr<Order>& current_order) {
+                         return current_order->getOrderId() == orderId;
+                     });
+
+            // If no more orders at this price, remove the price level
+            if (orders_at_price.empty()) {
+                sell_orders_by_price_.erase(book_it);
+            }
+        }
+    }
+
+    // Remove from hashmap
+    orders_by_id_.erase(it);
 }
 
 Volume OrderBook::GetVolumeAtPrice(Price price, Side side) const {
@@ -151,7 +200,7 @@ Volume OrderBook::GetVolumeAtPrice(Price price, Side side) const {
         if (it != buy_orders_by_price_.end()) {
             const auto& orders_at_price = it->second;
             for (const auto& order : orders_at_price) {
-                total_volume += order.getRemainingVolume();
+                total_volume += order->getRemainingVolume();
             }
         }
     } else {
@@ -159,7 +208,7 @@ Volume OrderBook::GetVolumeAtPrice(Price price, Side side) const {
         if (it != sell_orders_by_price_.end()) {
             const auto& orders_at_price = it->second;
             for (const auto& order : orders_at_price) {
-                total_volume += order.getRemainingVolume();
+                total_volume += order->getRemainingVolume();
             }
         }
     }

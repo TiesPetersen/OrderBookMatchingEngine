@@ -20,7 +20,7 @@ const int kStartPrice = 1000'00;
 int main() {
     // ----- Configuration -----
     const int num_orders =
-        5000000;  // half is used to populate the book, half for benchmarking
+        10'000'000;  // half is used to populate the book, half for actual benchmarking
 
     // ----- Random Order Generation -----
 
@@ -61,7 +61,6 @@ int main() {
 
         // CANCEL order
         if (type == CANCEL) {
-            continue;  // TODO: disable CANCEL orders for now, remove later
             if (!orders.empty()) {
                 // Randomly select an existing order to cancel
                 uniform_int_distribution<size_t> index_distribution(
@@ -119,7 +118,11 @@ int main() {
 
     OrderBook latency_orderBook;
     for (int i = 0; i < num_orders / 2; i++) {
-        latency_orderBook.PlaceOrder(orders[i]);
+        if (orders[i].getOrderType() != CANCEL) {
+            latency_orderBook.PlaceOrder(orders[i]);
+        } else {
+            latency_orderBook.CancelOrder(orders[i].getCancelOrderId());
+        }
     }
 
     // Latency measurement
@@ -131,7 +134,11 @@ int main() {
 
     for (int i = num_orders / 2; i < num_orders; i++) {
         auto start = chrono::high_resolution_clock::now();
-        latency_orderBook.PlaceOrder(orders[i]);
+        if (orders[i].getOrderType() != CANCEL) {
+            latency_orderBook.PlaceOrder(orders[i]);
+        } else {
+            latency_orderBook.CancelOrder(orders[i].getCancelOrderId());
+        }
         auto end = chrono::high_resolution_clock::now();
         auto diff = chrono::duration_cast<chrono::nanoseconds>(end - start);
         latencies.push_back(static_cast<long long>(diff.count()));
@@ -176,7 +183,11 @@ int main() {
 
     OrderBook throughput_orderBook;
     for (int i = 0; i < num_orders / 2; i++) {
-        throughput_orderBook.PlaceOrder(orders[i]);
+        if (orders[i].getOrderType() != CANCEL) {
+            throughput_orderBook.PlaceOrder(orders[i]);
+        } else {
+            throughput_orderBook.CancelOrder(orders[i].getCancelOrderId());
+        }
     }
 
     // Throughput measurement
@@ -186,7 +197,11 @@ int main() {
 
     auto throughput_start = chrono::high_resolution_clock::now();
     for (int i = num_orders / 2; i < num_orders; i++) {
-        throughput_orderBook.PlaceOrder(orders[i]);
+        if (orders[i].getOrderType() != CANCEL) {
+            throughput_orderBook.PlaceOrder(orders[i]);
+        } else {
+            throughput_orderBook.CancelOrder(orders[i].getCancelOrderId());
+        }
     }
     auto throughput_end = chrono::high_resolution_clock::now();
 
