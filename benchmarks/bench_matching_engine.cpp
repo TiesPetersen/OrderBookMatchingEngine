@@ -18,9 +18,9 @@ const int kMaxPrice = 1200'00;
 const int kStartPrice = 1000'00;
 
 int main() {
-    const int num_orders = 30000000;
-
-    // TODO: warm-up + populate book with initial orders
+    // ----- Configuration -----
+    const int num_orders =
+        5000000;  // half is used to populate the book, half for benchmarking
 
     // ----- Random Order Generation -----
 
@@ -61,7 +61,7 @@ int main() {
 
         // CANCEL order
         if (type == CANCEL) {
-            continue;
+            continue;  // TODO: disable CANCEL orders for now, remove later
             if (!orders.empty()) {
                 // Randomly select an existing order to cancel
                 uniform_int_distribution<size_t> index_distribution(
@@ -113,29 +113,38 @@ int main() {
 
     // ----- Latency Benchmark Execution -----
 
-    cout << "Running latency benchmark using " << num_orders << " orders..."
+    // Warm-up
+    cout << "Warming up the order book with " << num_orders / 2 << " orders..."
+         << "\n";
+
+    OrderBook latency_orderBook;
+    for (int i = 0; i < num_orders / 2; i++) {
+        latency_orderBook.PlaceOrder(orders[i]);
+    }
+
+    // Latency measurement
+    cout << "Running latency benchmark using " << num_orders / 2 << " orders..."
          << "\n";
 
     vector<long long> latencies;  // in nanoseconds
-    latencies.reserve(num_orders);
+    latencies.reserve(num_orders / 2);
 
-    OrderBook latency_orderBook;
-    for (const auto& order : orders) {
+    for (int i = num_orders / 2; i < num_orders; i++) {
         auto start = chrono::high_resolution_clock::now();
-        latency_orderBook.PlaceOrder(order);
+        latency_orderBook.PlaceOrder(orders[i]);
         auto end = chrono::high_resolution_clock::now();
         auto diff = chrono::duration_cast<chrono::nanoseconds>(end - start);
         latencies.push_back(static_cast<long long>(diff.count()));
     }
 
-    // save latencies to a file for further analysis
+    // Save latencies to a file for further analysis
     ofstream latency_file("latencies.txt");
     for (const auto& latency : latencies) {
         latency_file << latency << "\n";
     }
     latency_file.close();
 
-    // ----- Results Output -----
+    // ----- Latency results -----
 
     // Average latency
     double average_latency =
@@ -161,19 +170,32 @@ int main() {
 
     // ----- Throughput Benchmark Execution -----
 
-    cout << "Running throughput benchmark using " << num_orders << " orders..."
-         << "\n";
+    // Warm-up
+    cout << "Warming up the order book again with " << num_orders / 2
+         << " orders..." << "\n";
 
     OrderBook throughput_orderBook;
+    for (int i = 0; i < num_orders / 2; i++) {
+        throughput_orderBook.PlaceOrder(orders[i]);
+    }
+
+    // Throughput measurement
+    cout << "Running throughput benchmark using " << num_orders / 2
+         << " orders..."
+         << "\n";
+
     auto throughput_start = chrono::high_resolution_clock::now();
-    for (const auto& order : orders) {
-        throughput_orderBook.PlaceOrder(order);
+    for (int i = num_orders / 2; i < num_orders; i++) {
+        throughput_orderBook.PlaceOrder(orders[i]);
     }
     auto throughput_end = chrono::high_resolution_clock::now();
+
+    // ----- Throughput results -----
+
     auto total_duration = chrono::duration_cast<chrono::milliseconds>(
                               throughput_end - throughput_start)
                               .count();
-    double throughput = static_cast<double>(num_orders) /
+    double throughput = static_cast<double>(num_orders / 2) /
                         (static_cast<double>(total_duration) / 1000.0);
     cout << "- Throughput: " << throughput / 1e6 << "M orders/sec" << "\n";
 }
