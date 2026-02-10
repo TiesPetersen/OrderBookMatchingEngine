@@ -45,6 +45,8 @@ enable_testing()
 
 add_executable(test_engine
     tests/test_order_book.cpp
+    tests/TestUtils.cpp
+    tests/TestCases.cpp
 )
 target_link_libraries(test_engine matching_engine_lib)
 add_test(NAME MatchingEngineTests COMMAND test_engine)

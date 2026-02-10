@@ -13,6 +13,9 @@ using namespace std;
 #include "matching_engine/Order.hpp"
 #include "matching_engine/OrderBook.hpp"
 
+const int kNumOrders =
+    10'000'000;  // Total number of orders to generate and process
+
 const int kMinPrice = 800'00;     // Min price in cents
 const int kMaxPrice = 1200'00;    // Max price in cents
 const int kStartPrice = 1000'00;  // Starting mid price in cents
@@ -21,13 +24,9 @@ const int kMaxCancelAttempts =
     20;  // Max attempts to find a valid target for CANCEL orders
 
 int main() {
-    // ----- Configuration -----
-    const int num_orders =
-        10'000'000;  // half is used to populate the book, half for actual benchmarking
-
     // ----- Random Order Generation -----
 
-    cout << "Generating " << num_orders << " random orders..." << "\n";
+    cout << "Generating " << kNumOrders << " random orders..." << "\n";
 
     random_device rd;
     default_random_engine generator(rd());
@@ -50,15 +49,15 @@ int main() {
 
     // Pre-allocate memory
     vector<Order> orders;
-    orders.reserve(num_orders);
+    orders.reserve(kNumOrders);
 
     // Shadow book to track active orders for generating valid CANCEL orders
     OrderBook shadow_book;
     vector<OrderID> active_limit_ids;
-    active_limit_ids.reserve(num_orders);
+    active_limit_ids.reserve(kNumOrders);
 
     // Generate Orders
-    while (orders.size() < num_orders) {
+    while (orders.size() < kNumOrders) {
         // Simulate mid-price movement
         current_mid_price += price_difference(generator);
         current_mid_price = max<double>(current_mid_price, kMinPrice);
@@ -142,11 +141,11 @@ int main() {
     // ----- Latency Benchmark Execution -----
 
     // Warm-up
-    cout << "Warming up the order book with " << num_orders / 2 << " orders..."
+    cout << "Warming up the order book with " << kNumOrders / 2 << " orders..."
          << "\n";
 
     OrderBook latency_orderBook;
-    for (int i = 0; i < num_orders / 2; i++) {
+    for (int i = 0; i < kNumOrders / 2; i++) {
         if (orders[i].getOrderType() != CANCEL) {
             latency_orderBook.PlaceOrder(orders[i]);
         } else {
@@ -155,13 +154,13 @@ int main() {
     }
 
     // Latency measurement
-    cout << "Running latency benchmark using " << num_orders / 2 << " orders..."
+    cout << "Running latency benchmark using " << kNumOrders / 2 << " orders..."
          << "\n";
 
     vector<long long> latencies;  // in nanoseconds
-    latencies.reserve(num_orders / 2);
+    latencies.reserve(kNumOrders / 2);
 
-    for (int i = num_orders / 2; i < num_orders; i++) {
+    for (int i = kNumOrders / 2; i < kNumOrders; i++) {
         auto start = chrono::high_resolution_clock::now();
         if (orders[i].getOrderType() != CANCEL) {
             latency_orderBook.PlaceOrder(orders[i]);
@@ -207,11 +206,11 @@ int main() {
     // ----- Throughput Benchmark Execution -----
 
     // Warm-up
-    cout << "Warming up the order book again with " << num_orders / 2
+    cout << "Warming up the order book again with " << kNumOrders / 2
          << " orders..." << "\n";
 
     OrderBook throughput_orderBook;
-    for (int i = 0; i < num_orders / 2; i++) {
+    for (int i = 0; i < kNumOrders / 2; i++) {
         if (orders[i].getOrderType() != CANCEL) {
             throughput_orderBook.PlaceOrder(orders[i]);
         } else {
@@ -220,12 +219,12 @@ int main() {
     }
 
     // Throughput measurement
-    cout << "Running throughput benchmark using " << num_orders / 2
+    cout << "Running throughput benchmark using " << kNumOrders / 2
          << " orders..."
          << "\n";
 
     auto throughput_start = chrono::high_resolution_clock::now();
-    for (int i = num_orders / 2; i < num_orders; i++) {
+    for (int i = kNumOrders / 2; i < kNumOrders; i++) {
         if (orders[i].getOrderType() != CANCEL) {
             throughput_orderBook.PlaceOrder(orders[i]);
         } else {
@@ -239,7 +238,7 @@ int main() {
     auto total_duration = chrono::duration_cast<chrono::milliseconds>(
                               throughput_end - throughput_start)
                               .count();
-    double throughput = static_cast<double>(num_orders / 2) /
+    double throughput = static_cast<double>(kNumOrders / 2) /
                         (static_cast<double>(total_duration) / 1000.0);
     cout << "- Throughput: " << throughput / 1e6 << "M orders/sec" << "\n";
 }

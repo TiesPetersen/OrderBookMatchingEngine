@@ -1,5 +1,4 @@
 #include <algorithm>
-#include <iostream>
 #include <vector>
 
 #include "common/Types.hpp"
@@ -148,7 +147,6 @@ void OrderBook::CancelOrder(OrderID orderId) {
     auto it = orders_by_id_.find(orderId);
     if (it == orders_by_id_.end()) {
         // Order not found
-        cout << "Cancel failed: Order ID " << orderId << " not found." << "\n";
         return;
     }
     shared_ptr<Order> order = it->second;
