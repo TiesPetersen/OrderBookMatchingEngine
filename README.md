@@ -4,7 +4,9 @@
 
 # Order Book Matching Engine
 
-A high-performance, single-threaded C++ order book matching engine built for low-latency trade execution. This project demonstrates optimized matching logic and efficient order book data structures, achieving sub-microsecond latency on modern hardware.
+A high-performance, single-threaded C++ order book matching engine built for low-latency order matching. This project demonstrates optimized matching logic and efficient order book data structures, achieving sub-microsecond latency on modern hardware.
+
+The matching engine processes buy and sell orders, matches them at the best available prices using price-time priority, and maintains an efficient limit order book data structure. It supports limit orders, market orders, and order cancellations, which are the core operations required for electronic trading systems.
 
 **Latency Metrics (40M orders)**
 - Average: 163 ns
@@ -15,7 +17,7 @@ A high-performance, single-threaded C++ order book matching engine built for low
 ![Order Processing Latency Distribution](./scripts/latencies_hist.png)
 _Order processing latency distribution (log scale)_
 
-The latency distribution is heavily skewed toward the lower end. Outliers are rare (10-100 occurrences per 40M orders) and likely caused by hardware interrupts or cache misses.
+The latency distribution is heavily skewed toward the lower end. Outliers are rare (10-100 occurrences per 40M orders) and likely caused by hardware interrupts or other background processes.
 
 Read more about the performance and benchmark details in the [Performance](#performance) section below.
 
