@@ -15,7 +15,7 @@ using namespace std;
 #include "matching_engine/OrderBook.hpp"
 
 const int kNumOrders =
-    10'000'000;  // Total number of orders to generate and process
+    100'000'000;  // Total number of orders to generate and process
 
 const int kMinPrice = 800'00;     // Min price in cents
 const int kMaxPrice = 1200'00;    // Max price in cents
