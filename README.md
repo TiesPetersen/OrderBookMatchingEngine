@@ -3,16 +3,24 @@
 
 
 # Order Book Matching Engine
-A highly optimized C++ order book matching engine. [TODO: more detailed/descriptive description]
-Single threaded, deterministic
 
-Concise performance metrics...
+A high-performance, single-threaded C++ order book matching engine built for low-latency trade execution. This project demonstrates optimized matching logic and efficient order book data structures, achieving sub-microsecond latency on modern hardware.
 
-Image? Latency histogram? Implementation visualization from blog post?
+**Latency Metrics (40M orders)**
+- Average: 163 ns
+- P50: 142 ns
+- P99: 396 ns
+- Throughput: 5.13M orders/sec
 
-Focus on matching logic and data structures, not on network, serialization, etc. This effects the benchmark results, but the goal is to measure the performance of the matching engine itself, not the entire system. In real-world applications, network latency and serialization overhead can be significant, but they are outside the scope of this project.
+![Order Processing Latency Distribution](./scripts/latencies_hist.png)
+_Order processing latency distribution (log scale)_
 
-Link to project report
+The latency distribution is heavily skewed toward the lower end. Outliers are rare (10-100 occurrences per 40M orders) and likely caused by hardware interrupts or cache misses.
+
+Read more about the performance and benchmark details in the [Performance](#performance) section below.
+
+**Note:** These metrics measure matching engine performance exclusively. In production systems, network latency, serialization, and system overhead add significant delay beyond these results.
+
 
 ## Features
 
@@ -44,6 +52,8 @@ _*Such high max latency might be caused by hardware interrupts, context switches
 
 ![Order Processing Latency Distribution](./scripts/latencies_hist.png)
 _Order processing latency distribution (log scale)_
+
+As you can see, the latency distribution is heavily skewed towards the lower end. However, there are some outliers that take significantly longer. The frequencies of these outliers are in the order of 10 to 100, which is extremely low compared to the total number of orders processed (40M).
 
 **Important:** These metrics measure only the matching engine's latency. In real-world systems, network latency, serialization/deserialization, and other system overhead add significant delay. These results capture purely the time to process an order and update the order book.
 
