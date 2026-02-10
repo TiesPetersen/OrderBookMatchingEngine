@@ -13,17 +13,9 @@ endif()
 message(STATUS "BUILD TYPE: ${CMAKE_BUILD_TYPE}")
 
 if(MSVC)
-    # --- WINDOWS (Visual Studio) ---
-    # /O2   = Maximize Speed (Equivalent to -O3)
-    # /Ot   = Favor Code Speed
-    # /Ob2  = Aggressive Inlining
-    # /Oi   = Enable Intrinsic Functions
     set(CMAKE_CXX_FLAGS_RELEASE "/O2 /Ot /Ob2 /Oi /DNDEBUG")
-    
-    # Debug flags
     set(CMAKE_CXX_FLAGS_DEBUG "/Zi /Ob0 /Od /RTC1")
 else()
-    # --- LINUX / MAC (Clang / GCC) ---
     set(CMAKE_CXX_FLAGS_RELEASE "-O3 -march=native -funroll-loops -DNDEBUG")
     set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -Wall -Wextra")
 endif()

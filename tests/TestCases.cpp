@@ -133,7 +133,7 @@ void TestMatchBestPrice(OrderBook& ob) {
 
     ASSERT_EQ(trades.size(), 1);
     ASSERT_EQ(trades[0].sell_order_id, sell2.getOrderId());
-    ASSERT_EQ(trades[0].price, 99);  // Executed at resting price
+    ASSERT_EQ(trades[0].price, 99);
 }
 
 void TestMarketOrderBuy(OrderBook& ob) {
@@ -170,7 +170,6 @@ void TestMarketOrderNoLiquidity(OrderBook& ob) {
     Order mkt = createMarketOrder(BUY, 10);
     auto trades = ob.PlaceOrder(mkt);
 
-    // No match, and market orders shouldn't stay in book if no liquidity (based on implementation analysis)
     ASSERT_EQ(trades.size(), 0);
     ASSERT_FALSE(ob.ContainsOrder(mkt.getOrderId()));
 }
@@ -189,10 +188,10 @@ void TestCancelOrder(OrderBook& ob) {
 }
 
 void TestCancelNonExistent(OrderBook& ob) {
-    ob.CancelOrder(99999);  // Should not crash
+    ob.CancelOrder(99999);
     Order order = createLimitOrder(BUY, 100, 10);
     ob.PlaceOrder(order);
-    ob.CancelOrder(99999);  // Should not affect existing
+    ob.CancelOrder(99999);
     ASSERT_TRUE(ob.ContainsOrder(order.getOrderId()));
 }
 
@@ -307,14 +306,14 @@ void TestMarketOrderPartialFillThenDrop(OrderBook& ob) {
 
     ASSERT_EQ(trades.size(), 1);
     ASSERT_EQ(trades[0].volume, 5);
-    ASSERT_FALSE(ob.ContainsOrder(mkt.getOrderId()));  // Remainder dropped
+    ASSERT_FALSE(ob.ContainsOrder(mkt.getOrderId()));
 }
 
 void TestMarketOrderClearsBook(OrderBook& ob) {
     ob.PlaceOrder(createLimitOrder(SELL, 100, 10));
     ob.PlaceOrder(createLimitOrder(SELL, 101, 10));
 
-    Order mkt = createMarketOrder(BUY, 100);  // Huge volume
+    Order mkt = createMarketOrder(BUY, 100);
     auto trades = ob.PlaceOrder(mkt);
 
     ASSERT_EQ(trades.size(), 2);

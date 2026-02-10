@@ -1,14 +1,12 @@
 #include <string>
 #include "TestCases.hpp"
 #include "TestRunner.hpp"
-#include "TestUtils.hpp"
 
 using namespace std;
 
 int main() {
     TestRunner runner;
 
-    // Run tests with fresh OrderBook each time
     runner.run("Empty Book", []() {
         OrderBook ob;
         TestEmptyBook(ob);
