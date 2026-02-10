@@ -10,6 +10,8 @@ Concise performance metrics...
 
 Image? Latency histogram? Implementation visualization from blog post?
 
+Link to project report
+
 ## Features
 
 ### Place order

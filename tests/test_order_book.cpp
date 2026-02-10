@@ -26,7 +26,7 @@ int main() {
 
         return EXIT_SUCCESS;
     } catch (const std::exception& e) {
-        cerr << "Exception caught in test: " << e.what() << '\n';
+        cerr << "Exception caught during testing: " << e.what() << '\n';
 
         return EXIT_FAILURE;
     }

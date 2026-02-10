@@ -13,9 +13,12 @@ using namespace std;
 #include "matching_engine/Order.hpp"
 #include "matching_engine/OrderBook.hpp"
 
-const int kMinPrice = 800'00;
-const int kMaxPrice = 1200'00;
-const int kStartPrice = 1000'00;
+const int kMinPrice = 800'00;     // Min price in cents
+const int kMaxPrice = 1200'00;    // Max price in cents
+const int kStartPrice = 1000'00;  // Starting mid price in cents
+
+const int kMaxCancelAttempts =
+    20;  // Max attempts to find a valid target for CANCEL orders
 
 int main() {
     // ----- Configuration -----
@@ -49,6 +52,11 @@ int main() {
     vector<Order> orders;
     orders.reserve(num_orders);
 
+    // Shadow book to track active orders for generating valid CANCEL orders
+    OrderBook shadow_book;
+    vector<OrderID> active_limit_ids;
+    active_limit_ids.reserve(num_orders);
+
     // Generate Orders
     while (orders.size() < num_orders) {
         // Simulate mid-price movement
@@ -61,23 +69,37 @@ int main() {
 
         // CANCEL order
         if (type == CANCEL) {
-            if (!orders.empty()) {
-                // Randomly select an existing order to cancel
-                uniform_int_distribution<size_t> index_distribution(
-                    0, orders.size() - 1);
-                size_t index_to_cancel = index_distribution(generator);
-                OrderID order_id_to_cancel =
-                    orders[index_to_cancel].getOrderId();
+            if (active_limit_ids.empty())
+                continue;
 
-                // make sure we don't try to cancel an order that is already a CANCEL
-                while (orders[index_to_cancel].getOrderType() == CANCEL) {
-                    index_to_cancel = index_distribution(generator);
-                    order_id_to_cancel = orders[index_to_cancel].getOrderId();
+            // Attempt to find a valid target
+            size_t attempts = 0;
+
+            while (attempts < kMaxCancelAttempts && !active_limit_ids.empty()) {
+                // Pick random index
+                uniform_int_distribution<size_t> dist(
+                    0, active_limit_ids.size() - 1);
+                size_t idx = dist(generator);
+                OrderID target_id = active_limit_ids[idx];
+
+                // Check if it really exists in the book (not filled)
+                if (shadow_book.ContainsOrder(target_id)) {
+                    // Found a valid limit order to cancel
+                    orders.emplace_back(orders.size(), BUY, CANCEL, 0, 0,
+                                        target_id);
+                    shadow_book.CancelOrder(target_id);
+
+                    // Remove from active list
+                    active_limit_ids[idx] = active_limit_ids.back();
+                    active_limit_ids.pop_back();
+                    break;
                 }
 
-                // Create CANCEL order
-                orders.emplace_back(orders.size(), BUY, CANCEL, 0, 0,
-                                    order_id_to_cancel);
+                // It was already filled, remove from active list and try again
+                active_limit_ids[idx] = active_limit_ids.back();
+                active_limit_ids.pop_back();
+
+                attempts++;
             }
             continue;
         }
@@ -108,6 +130,13 @@ int main() {
         Volume volume = volume_distribution(generator);
 
         orders.emplace_back(orders.size(), side, type, price, volume);
+
+        // Update Shadow State
+        shadow_book.PlaceOrder(orders.back());
+
+        if (type == LIMIT) {
+            active_limit_ids.push_back(orders.back().getOrderId());
+        }
     }
 
     // ----- Latency Benchmark Execution -----

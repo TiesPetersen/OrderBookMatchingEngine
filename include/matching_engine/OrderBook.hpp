@@ -31,6 +31,9 @@ class OrderBook {
     vector<Trade> PlaceOrder(Order order);
     void CancelOrder(OrderID orderId);
 
+    // Helper methods
+    bool ContainsOrder(OrderID orderId) const;
+
     // Query methods
     Volume GetVolumeAtPrice(Price price, Side side) const;
 };
