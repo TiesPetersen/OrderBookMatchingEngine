@@ -36,4 +36,5 @@ class OrderBook {
 
     // Query methods
     Volume GetVolumeAtPrice(Price price, Side side) const;
+    void GetOrderBookStats() const;
 };

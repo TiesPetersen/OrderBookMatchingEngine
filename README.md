@@ -28,6 +28,10 @@ _Note: the modify-order operation has been left out for simplicity. Modifying an
 
 ## Performance
 
+Mention forced cold cache
+
+Mention this only measures the latency of the matching engine, not including network latency, serialization/deserialization, etc. This is purely the time it takes for the matching engine to process an order and update the order book.
+
 (Some benchmark details and performance stats to quickly showcase to recruiters)
 
 ### Benchmark Data

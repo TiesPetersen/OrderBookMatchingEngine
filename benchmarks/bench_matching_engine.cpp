@@ -1,10 +1,11 @@
+#include <emmintrin.h>
+#include <immintrin.h>
 #include <algorithm>
 #include <chrono>
 #include <fstream>
 #include <iostream>
 #include <numeric>
 #include <random>
-#include <ranges>
 #include <vector>
 
 using namespace std;
@@ -141,7 +142,8 @@ int main() {
     // ----- Latency Benchmark Execution -----
 
     // Warm-up
-    cout << "Warming up the order book with " << kNumOrders / 2 << " orders..."
+    cout << "Populating order book by simulating " << kNumOrders / 2
+         << " orders..."
          << "\n";
 
     OrderBook latency_orderBook;
@@ -154,23 +156,37 @@ int main() {
     }
 
     // Latency measurement
-    cout << "Running latency benchmark using " << kNumOrders / 2 << " orders..."
+    cout << "Running latency benchmark using the remaining " << kNumOrders / 2
+         << " orders..."
          << "\n";
 
     vector<long long> latencies;  // in nanoseconds
     latencies.reserve(kNumOrders / 2);
 
+    long long total_checksum = 0;  // To prevent compiler optimizations
+
     for (int i = kNumOrders / 2; i < kNumOrders; i++) {
+        // Force cold cache for the order data
+        _mm_clflush(&orders[i]);
+        _mm_mfence();
+
         auto start = chrono::high_resolution_clock::now();
+        vector<Trade> trades;
         if (orders[i].getOrderType() != CANCEL) {
-            latency_orderBook.PlaceOrder(orders[i]);
+            trades = latency_orderBook.PlaceOrder(orders[i]);
         } else {
             latency_orderBook.CancelOrder(orders[i].getCancelOrderId());
         }
         auto end = chrono::high_resolution_clock::now();
         auto diff = chrono::duration_cast<chrono::nanoseconds>(end - start);
         latencies.push_back(static_cast<long long>(diff.count()));
+
+        // Prevent compiler optimization by using the trades result in some way
+        total_checksum += trades.size();
     }
+
+    cout << "Total checksum (to prevent optimization, ignore this number): "
+         << total_checksum << "\n";
 
     // Save latencies to a file for further analysis
     ofstream latency_file("latencies.txt");
@@ -206,7 +222,7 @@ int main() {
     // ----- Throughput Benchmark Execution -----
 
     // Warm-up
-    cout << "Warming up the order book again with " << kNumOrders / 2
+    cout << "Populating order book by simulating " << kNumOrders / 2
          << " orders..." << "\n";
 
     OrderBook throughput_orderBook;
@@ -219,12 +235,16 @@ int main() {
     }
 
     // Throughput measurement
-    cout << "Running throughput benchmark using " << kNumOrders / 2
-         << " orders..."
+    cout << "Running throughput benchmark using the remaining "
+         << kNumOrders / 2 << " orders..."
          << "\n";
 
     auto throughput_start = chrono::high_resolution_clock::now();
     for (int i = kNumOrders / 2; i < kNumOrders; i++) {
+        // Force cold cache for the order data
+        _mm_clflush(&orders[i]);
+        _mm_mfence();
+
         if (orders[i].getOrderType() != CANCEL) {
             throughput_orderBook.PlaceOrder(orders[i]);
         } else {

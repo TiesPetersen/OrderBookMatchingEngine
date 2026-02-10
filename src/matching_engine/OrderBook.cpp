@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <iostream>
 #include <vector>
 
 #include "common/Types.hpp"
@@ -218,4 +219,27 @@ Volume OrderBook::GetVolumeAtPrice(Price price, Side side) const {
     }
 
     return total_volume;
+}
+
+void OrderBook::GetOrderBookStats() const {
+    cout << "Order Book Stats:\n";
+    cout << "Buy Side:\n";
+    for (const auto& [price, orders_at_price] : buy_orders_by_price_) {
+        Volume total_volume = 0;
+        for (const auto& order : orders_at_price) {
+            total_volume += order->getRemainingVolume();
+        }
+        cout << "Price: " << price << ", Total Volume: " << total_volume
+             << ", Orders: " << orders_at_price.size() << "\n";
+    }
+
+    cout << "Sell Side:\n";
+    for (const auto& [price, orders_at_price] : sell_orders_by_price_) {
+        Volume total_volume = 0;
+        for (const auto& order : orders_at_price) {
+            total_volume += order->getRemainingVolume();
+        }
+        cout << "Price: " << price << ", Total Volume: " << total_volume
+             << ", Orders: " << orders_at_price.size() << "\n";
+    }
 }
