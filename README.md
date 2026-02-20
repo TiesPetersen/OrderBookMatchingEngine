@@ -12,12 +12,13 @@ The matching engine processes buy and sell orders, matches them at the best avai
 - Average: 163 ns
 - P50: 142 ns
 - P99: 396 ns
+- P99.9: 850 ns
 - Throughput: 5.13M orders/sec
 
 ![Order Processing Latency Distribution](./scripts/latencies_hist.png)
 _Order processing latency distribution (log scale)_
 
-The latency distribution is heavily skewed toward the lower end. Outliers are rare (10-100 occurrences per 40M orders) and likely caused by hardware interrupts or other background processes.
+The latency distribution is heavily skewed toward the lower end. Outliers are rare (10-100 occurrences per 40M orders) and likely caused by hardware interrupts or other background processes. I would need to investigate further to pinpoint the exact cause of these outliers.
 
 Read more about the performance and benchmark details in the [Performance](#performance) section below.
 
@@ -25,30 +26,46 @@ Read more about the performance and benchmark details in the [Performance](#perf
 
 ## Features
 
-### Place order
-Places and executes a new order using price-time priority. 
+### Place Order
+Places and executes a new order using price-time priority. When a new order arrives, the engine attempts to match it against resting orders on the opposite side of the order book. If the order is partially or fully unmatched, the remainder is added to the order book as a resting order and will be matched against future incoming orders (in case of a limit order).
 
-**Order types**
-- Limit order
-- Market order
+**Order Types**
+- **Limit Order:** Specifies a maximum (buy) or minimum (sell) price. The order is placed on the order book if it cannot be immediately matched and waits for future orders to fill it.
+- **Market Order:** Executes immediately at the best available prices on the opposite side of the order book. If insufficient liquidity exists, the order is partially filled.
 
-### Cancel order
-Removes order from limit order book.
+### Cancel Order
+Removes an order from the limit order book. The cancellation is performed in O(1) time by looking up the order ID in the internal hash map and removing it from its price-level queue.
 
-_Note: the modify-order operation has been left out for simplicity. Modifying an order can simply be treated as a cancel + place order. You would lose your place in the time-priority queue this way, but that is what happens in real exchanges most of time anyway._
+**Note:** The modify-order operation has been left out for simplicity. Modifying an order can be treated as a cancel followed by a place order. You will lose your place in the time-priority queue this way, but that is what happens in real exchanges most of the time anyway.
 
 ## Optimizations & Design
 
-todo
+The matching engine is built to minimize latency and maximize throughput by using carefully selected C++ standard library containers and avoiding expensive operations like floating-point arithmetic or deep copies.
+
+#### Data Structures & Price-Time Priority
+The core limit order book is implemented using `std::map` to organize price levels. The buy side is sorted in descending order using `std::greater<Price>`, while the sell side uses `std::less<Price>`. This guarantees that the best bid and best ask are always instantly accessible at the beginning of the maps. Within each price level, orders are stored in a `std::deque`. This enforces First-In-First-Out (FIFO) time priority and allows for fast `O(1)` removal from the front of the queue as resting orders get filled.
+
+#### Fast Order Cancellation
+Because order cancellations are a frequent operation in any trading engine, the system uses an `std::unordered_map` to map every `OrderID` to its underlying order object. This enables `O(1)` lookups, allowing the engine to instantly locate and remove an order from its price-level queue without having to linearly scan the order book.
+
+#### Smart Pointers 
+Orders are managed using `std::shared_ptr`. This allows the same order object to exist safely in both the price-level queues and the cancellation hash map without duplicating memory or performing expensive deep copies. 
+
+#### Integer Arithmetic
+To avoid the latency overhead and rounding inaccuracies associated with floating-point numbers, `Price` and `Volume` are strictly represented as fixed-point `uint32_t` integers.
+
+#### Hardware Considerations
+To squeeze out maximum performance, the CMake configuration enforces strict compiler optimizations (`-O3`, `-march=native`, `-funroll-loops`). Furthermore, the benchmarking artificially flushes the CPU cache (`_mm_clflush`) before processing new orders, ensuring our metrics reflect memory access times closer to what you would see in a real-world, cold-cache scenario rather than artificial, cache-hot benchmark.
 
 ## Performance
-Our benchmark generates 100M synthetic orders, using the first 50M to populate the order book and the remaining 50M to measure performance. The benchmark runs with forced cold cache for each new order to provide realistic performance characteristics (using  `_mm_clflush`).
+Our benchmark generates 40M synthetic orders, using the first 20M to populate the order book and the remaining 20M to measure performance. The benchmark runs with forced cold cache for each new order to provide realistic performance characteristics (using  `_mm_clflush`).
 
 | Metric | Value |
 | :--- | ---: |
 | Average Latency | 164 ns |
 | P50 Latency | 144 ns |
 | P99 Latency | 401 ns |
+| P99.9 Latency | 850 ns |
 | Min Latency | 28 ns |
 | Max Latency* | 557,398 ns |
 | Throughput | 5.12M orders/sec |
@@ -72,7 +89,7 @@ _Small snippet of price movement and limit orders generated by the syntethic ord
 
 ## Testing
 
-The project includes unit tests for the order book implementation, covering core functionalities such as adding orders, matching orders, and canceling orders. See the `tests` folder for test cases and expected outcomes.
+The project includes unit tests for the order book implementation, covering core functionalities such as adding orders, matching orders, and canceling orders. See the `tests` folder for test cases and expected outcomes. Also see the [Build and Run](#build-and-run) section for instructions on how to build and run the tests.
 
 ## Dependencies & Tooling
 **Language:** C++20
@@ -136,8 +153,6 @@ _Linux_
 │   README.md
 ├───benchmarks
 │       bench_matching_engine.cpp
-├───docs
-│       diagrams.txt
 ├───include
 │   ├───common
 │   │       Types.hpp
@@ -145,7 +160,10 @@ _Linux_
 │           Order.hpp
 │           OrderBook.hpp
 ├───scripts
-│       dashboard.py
+│       latencies_hist.png
+│       latencies.py
+│       price_movement.png
+│       price_movement.py
 ├───src
 │   │   main.cpp
 │   └───matching_engine
@@ -154,13 +172,6 @@ _Linux_
 └───tests
         test_order_book.cpp
 ```
-
-Use the following command to update file structure (Windows), make sure that the /build folder is deleted:
-```
-tree /f
-```
-
-blah blah short explanation about file structure
 
 ## Contribute
 
@@ -193,33 +204,8 @@ Clang-Format is used for formatting the code. This guarantees that code is consi
 
 ## License
 
-???
+This project is licensed under the terms of the MIT license. See the [LICENSE](LICENSE) file for details.
 
 ---
 
 **Interested in more information or details?** Reach out to me on [LinkedIn](https://linkedin.com/in/tiespetersen), would love to answer questions and connect!
-
-
-
-
-
-
-
-
-
-
-<!-- ## Project Report
-Do you want all the details about the implementation of the matching engine, techniques and optimizations used, and a detailed performance analysis? View or download the project report:
-
-Project Report (Coming soon) ( View | Download )
-
-_Found it interesting? Feel free to share it with friends or colleagues who might enjoy or benefit from it. Thank you ;)_
-
-## Blog
-
-Do you want more details about the build process, development and visualizations of the algorithms and data structures? Read my blog posts with visualizations, explanations, and more:
-
-- #1 : (Coming soon)
-- #2 : (Coming soon)
-
-_Enjoyed the blog? Feel free to share it with friends or colleagues who might enjoy or benefit from it. Thank you ;)_ -->
